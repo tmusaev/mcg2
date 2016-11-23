@@ -1,0 +1,122 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+#users {list-style-type: none; float: right; width: 15%; border: 2px solid black; background: #fff;}
+#users li { padding: 5px 10px; }
+#users header {padding: 5px 10px; background: #abc; }
+.user:hover {cursor:pointer; background: #eee;}
+ 
+body {
+  background: #98FB98;
+}
+ 
+.card, .cardback {
+  position: relative;
+  float: left;
+  width: 150px;
+  height: 220px;
+  border-radius: 10px;
+  background: #fff;
+  -webkit-box-shadow: 3px 3px 7px rgba(0,0,0,0.3);
+  box-shadow: 3px 3px 7px rgba(0,0,0,0.3);
+}
+
+.cost {
+  position: absolute;
+  left: 0px;
+  top: -15px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+}
+
+.name {
+  position: absolute;
+  left: 40px;
+  top: 0px;
+  font: 25px/30px Georgia, Times New Roman, serif;
+}
+
+.card img, .cardback img {
+  position: absolute;
+  width: 80%;
+  left: 13px;
+  top: 20px;
+  
+}
+
+.sword {
+  position: absolute;
+  font-size: 25px;
+  left: 0px;
+  bottom: 0px;
+}
+
+.heart {
+  position: absolute;
+  font-size: 20px;
+  right: 25px;
+  bottom: 0px;
+  color: red;
+}
+
+.atk {
+  position: absolute;
+  font-size: 25px;
+  left: 20px;
+  bottom: 0px;
+}
+
+.health {
+  position: absolute;
+  font-size: 25px;
+  right: 5px;
+  bottom: 0px;
+}
+
+/* For modern browsers */
+.hand:before,
+.hand:after {
+    content:"";
+    display:table;
+}
+ 
+.hand:after {
+    clear:both;
+}
+
+.card:hover {
+  transform: scale(1.1);
+  z-index: 1;
+  bottom: 100px;
+  cursor: pointer;
+}
+
+.hand {
+  margin-left: 50px;
+  position: absolute;
+  bottom: 0px;
+}
+
+.oppHand {
+  margin-left: 50px;
+  position: absolute;
+  top: 0px;
+}
+
+.inPlay {
+  margin-left: 50px;
+  position: absolute;
+  bottom: 250px;
+}
+
+.oppInPlay {
+  margin-left: 50px;
+  position: absolute;
+  top: 250px;
+}
+
+#hand > *, #oppHand > * {
+  margin-right: -70px;
+}
+
+#inPlay > *, #oppInPlay > * {
+  margin-right: 40px;
+}

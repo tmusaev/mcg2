@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <title>CCG</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <ul id="users"></ul>
+    <div class="hand" id="hand"></div>
+    <div class="oppHand" id="oppHand"></div>
+    <div class="inPlay" id="inPlay"></div>
+    <div class="oppInPlay" id="oppInPlay"></div>
+    
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/images.js"></script>
+  <script src="/gui.js"></script>
+  <script>
+    var username = null;
+    var myId = null;
+    var socket = io();
+    $.get('/user', function(user) {
+      if(user == 'error')
+        document.location.href = '/login';
+      else {
+        username = user;
+        socket.emit('connectToServer', user);
+      }
+    });
+    socket.on('myId', function(id){
+      myId = id;
+    });
+    socket.on('users', function(users){
+      $('#users').empty();
+      $('#users').append($('<header>').text(users.length+' user(s) online.'));
+      for(var i = 0; i < users.length; i++) {
+        if(username == users[i])
+          $('#users').append($('<li>').text('***'+users[i]));
+        else
+          $('#users').append($('<li class="user">').text(users[i]));
+      }
+    });
+    $(document).on('click', '.user', function () {
+      socket.emit('challenge', $(this).text());
+    });
+    socket.on('challenge', function(from){
+      var ret = confirm("Challenged by: "+from+". Do you wish to accept?");
+      if(ret) {
+        socket.emit('newgame', from, username);
+      }
+    });
+    socket.on('gameState', function(game) {
+      //socket.emit('debug', myId);
+      //socket.emit('debug', game.player1.id);
+      //socket.emit('debug', game.player2.id);
+      //var player;
+     // var opponent;
+      if(game.player1.id == myId) {
+        drawHand(game.player1.hand);
+        drawOppHand(game.player2.hand);
+        drawInPlay(game.player1.inPlay);
+        drawOppInPlay(game.player2.inPlay);
+      }
+      else {
+        drawHand(game.player2.hand);
+        drawOppHand(game.player1.hand);
+        drawInPlay(game.player2.inPlay);
+        drawOppInPlay(game.player1.inPlay);
+      }
+    });
+  </script>
+  </body>
+
+</html>
