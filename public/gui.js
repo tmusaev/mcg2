@@ -15,14 +15,14 @@ function drawOppHand(oppHand) {
 function drawInPlay(inPlay) {
   $('#inPlay').empty();
   for(var i = 0; i < inPlay.length; i++) {
-    drawCard(inPlay.indexOf(i), i, "inPlay");
+    drawCard(inPlay[i], i, "inPlay");
   }
 }
 
 function drawOppInPlay(oppInPlay) {
   $('#oppInPlay').empty();
   for(var i = 0; i < oppInPlay.length; i++)
-    drawCard(oppInPlay.indexOf(i), i, "oppInPlay");
+    drawCard(oppInPlay[i], i, "oppInPlay");
 }
 
 //render a card object to some location represented by a String

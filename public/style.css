@@ -37,6 +37,7 @@ body {
 .card img, .cardback img {
   position: absolute;
   width: 80%;
+  /*width: 50%;*/
   left: 13px;
   top: 20px;
   
@@ -82,35 +83,42 @@ body {
     clear:both;
 }
 
-.card:hover {
+/*.card:hover {
   transform: scale(1.1);
   z-index: 1;
   bottom: 100px;
   cursor: pointer;
-}
+}*/
 
 .hand {
-  margin-left: 50px;
+  margin-left: 400px;
   position: absolute;
-  bottom: 0px;
+  bottom: -80px;
 }
 
 .oppHand {
-  margin-left: 50px;
+  margin-left: 400px;
   position: absolute;
-  top: 0px;
+  top: -80px;
 }
 
 .inPlay {
   margin-left: 50px;
   position: absolute;
-  bottom: 250px;
+  bottom: 150px;
 }
 
 .oppInPlay {
   margin-left: 50px;
   position: absolute;
-  top: 250px;
+  top: 150px;
+}
+
+#hand > *:hover {
+  transform: scale(1.1);
+  z-index: 1;
+  bottom: 100px;
+  cursor: pointer;
 }
 
 #hand > *, #oppHand > * {
