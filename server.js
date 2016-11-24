@@ -66,12 +66,13 @@ io.on('connection', function(socket){
   });
   
   socket.on('newgame', function(user1, user2) {
+    var emptyPA = [];
     var p1Deck = initDeck();
     var p1Hand = initHand(p1Deck);
     var p2Deck = initDeck();
     var p2Hand = initHand(p2Deck);
-    var p1 = new Player(ids.get(user1), p1Deck, p1Hand, p1Hand, p1Hand, 0);
-    var p2 = new Player(ids.get(user2), p2Deck, p2Hand, p2Hand, p2Hand, 0);
+    var p1 = new Player(ids.get(user1), p1Deck, p1Hand, [], [], 0);// sending empty array into discard and inPlay
+    var p2 = new Player(ids.get(user2), p2Deck, p2Hand, [], [], 0);// causes both player's hands to dissapear
     var game = new Game(p1, p2);
     games.set(ids.get(user1), game);
     games.set(ids.get(user2), game);
@@ -81,15 +82,18 @@ io.on('connection', function(socket){
   
   socket.on('play', function(index) {
     var game = games.get(socket.id);
+    var c;
     if(game.player1.id == socket.id) {
       //game.player1.inPlay.push(game.player1.hand.splice(index, 1));
-      var c = game.player1.hand.splice(index, 1);
-      game.player1.inPlay.push(c);
+      c = game.player1.hand.splice(index, 1);
+      game.player1.inPlay.push(c[0]);
+      //game.player1.inPlay.concat(c);
     }
     else {
       //game.player2.inPlay.push(game.player2.hand.splice(index, 1));
-      var c = game.player2.hand.splice(index, 1);
-      game.player2.inPlay.push(c);
+      c = game.player2.hand.splice(index, 1);
+      game.player2.inPlay.push(c[0]);
+      //game.player2.inPlay.concat(c);
     }
     io.to(game.player1.id).emit('gameState', game);
     io.to(game.player2.id).emit('gameState', game);

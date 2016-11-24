@@ -3,6 +3,7 @@
   <head>
     <title>CCG</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="manifest" href="/manifest.json">
   </head>
   <body>
     <ul id="users"></ul>
@@ -16,6 +17,7 @@
   <script src="/images.js"></script>
   <script src="/gui.js"></script>
   <script>
+    screen.orientation.lock('landscape');
     var username = null;
     var myId = null;
     var socket = io();
