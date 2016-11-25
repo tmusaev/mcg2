@@ -9,6 +9,20 @@ body {
   background: #98FB98;
 }
  
+.power {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+} 
+
+.oppPower {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+}
+
 .card, .cardback {
   position: relative;
   float: left;
@@ -106,6 +120,14 @@ body {
   margin-left: 50px;
   position: absolute;
   bottom: 150px;
+}
+
+.endturn {
+  position: absolute;
+  right: 200px;
+  top: 300px;
+  width: 100px;
+  height: 40px;
 }
 
 .oppInPlay {

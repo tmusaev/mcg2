@@ -66,37 +66,58 @@ io.on('connection', function(socket){
   });
   
   socket.on('newgame', function(user1, user2) {
-    var emptyPA = [];
     var p1Deck = initDeck();
     var p1Hand = initHand(p1Deck);
     var p2Deck = initDeck();
     var p2Hand = initHand(p2Deck);
-    var p1 = new Player(ids.get(user1), p1Deck, p1Hand, [], [], 0);// sending empty array into discard and inPlay
-    var p2 = new Player(ids.get(user2), p2Deck, p2Hand, [], [], 0);// causes both player's hands to dissapear
+    var p1 = new Player(ids.get(user1), p1Deck, p1Hand, [], [], 0);
+    var p2 = new Player(ids.get(user2), p2Deck, p2Hand, [], [], 0);
     var game = new Game(p1, p2);
     games.set(ids.get(user1), game);
     games.set(ids.get(user2), game);
-    io.to(ids.get(user1)).emit('gameState', game);
-    io.to(ids.get(user2)).emit('gameState', game);
+    emitGameState(game);
   });
   
   socket.on('play', function(index) {
     var game = games.get(socket.id);
-    var c;
-    if(game.player1.id == socket.id) {
-      //game.player1.inPlay.push(game.player1.hand.splice(index, 1));
-      c = game.player1.hand.splice(index, 1);
-      game.player1.inPlay.push(c[0]);
-      //game.player1.inPlay.concat(c);
+    if(game.turnPlayerId != socket.id) {
+      io.to(socket.id).emit('notyourturn');
     }
     else {
-      //game.player2.inPlay.push(game.player2.hand.splice(index, 1));
-      c = game.player2.hand.splice(index, 1);
-      game.player2.inPlay.push(c[0]);
-      //game.player2.inPlay.concat(c);
+      var player;
+      if(game.player1.id == socket.id)
+        player = game.player1;
+      else
+        player = game.player2;
+      var c = player.hand[index];
+      if(c.cost > player.power)
+        io.to(socket.id).emit('notenoughpower');
+      else if(c.type == "Creature" && player.inPlay.length == 5)
+        io.to(socket.id).emit('toomanycreatures');
+      else {
+        var card = player.hand.splice(index, 1);
+        player.inPlay.push(card[0]);
+        player.power = player.power - c.cost;
+        emitGameState(game);
+      }
     }
-    io.to(game.player1.id).emit('gameState', game);
-    io.to(game.player2.id).emit('gameState', game);
+  });
+  
+  socket.on('endturn', function() {
+    var game = games.get(socket.id);
+    if(game.player1.id == socket.id) {
+      drawCard(game.player2);
+      game.player2.totalPower++;
+      game.player2.power = game.player2.totalPower;
+      game.turnPlayerId = game.player2.id;
+    }
+    else {
+      drawCard(game.player1);
+      game.player1.totalPower++;
+      game.player1.power = game.player1.totalPower;
+      game.turnPlayerId = game.player1.id;
+    }
+    emitGameState(game);
   });
   
   socket.on('disconnect', function(){
@@ -109,12 +130,21 @@ io.on('connection', function(socket){
       }
       io.emit('users', arr);
     }
+    if(games.has(socket.id)) {
+      games.delete(socket.id);
+    }
   });
 });
 
-var Card = function(name, cost, atk, health) {
+function emitGameState(game) {
+  io.to(game.player1.id).emit('gameState', game);
+  io.to(game.player2.id).emit('gameState', game);
+}
+
+var Card = function(name, cost, atk, health, type) {
   this.name = name;
   this.cost = cost;
+  this.type = type;
   this.atk = atk;
   this.health = health;
 };
@@ -125,24 +155,45 @@ var Player = function(id, deck, hand, discard, inPlay, power) {
   this.hand = hand;
   this.discard = discard;
   this.inPlay = inPlay;
+  this.totalPower = 0;
   this.power = power;
 };
 
 var Game = function(player1, player2) {
   this.player1 = player1;
   this.player2 = player2;
+  if(Math.floor((Math.random() * 2) + 1) == 1){
+    this.turnPlayerId = player1.id;
+    player1.totalPower++;
+    player1.power++;
+  }
+  else {
+    this.turnPlayerId = player2.id;
+    player2.totalPower++;
+    player2.power++;
+  }
 };
 
-var Things = new Card("Things", 1, 1, 1);
-var Assassin = new Card("Assassin", 2, 2, 2);
-var Captain = new Card("Captain", 3, 3, 3);
-var Warrior = new Card("Warrior", 4, 4, 4);
-var Priest = new Card("Priest", 5, 5, 5);
-var Wardog = new Card("Wardog", 6, 6, 6);
-var Ninja = new Card("Ninja", 7, 7, 7);
-var Medic = new Card("Medic", 8, 8, 8);
-var Sherrif = new Card("Sherrif", 9, 9, 9);
-var Judge = new Card("Judge", 10, 10, 10);
+var Things = new Card("Things", 1, 1, 1, "Creature");
+var Assassin = new Card("Assassin", 2, 2, 2, "Creature");
+var Captain = new Card("Captain", 3, 3, 3, "Creature");
+var Warrior = new Card("Warrior", 4, 4, 4, "Creature");
+var Priest = new Card("Priest", 5, 5, 5, "Creature");
+var Wardog = new Card("Wardog", 6, 6, 6, "Creature");
+var Ninja = new Card("Ninja", 7, 7, 7, "Creature");
+var Medic = new Card("Medic", 8, 8, 8, "Creature");
+var Sherrif = new Card("Sherrif", 9, 9, 9, "Creature");
+var Judge = new Card("Judge", 10, 10, 10, "Creature");
+
+function drawCard(player) {
+  if(player.deck.length > 0) {
+    var c = player.deck.shift();
+    if(player.hand.length < 10)
+      player.hand.push(c);
+    else
+      player.discard.push(c);
+  }
+}
 
 function initHand(deck) {
   var hand = [];
