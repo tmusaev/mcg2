@@ -6,17 +6,20 @@
   </head>
   <body>
     <ul id="users"></ul>
+    <button class="endturn" id="endturn">End Turn</button>
     <div class="hand" id="hand"></div>
     <div class="oppHand" id="oppHand"></div>
     <div class="inPlay" id="inPlay"></div>
     <div class="oppInPlay" id="oppInPlay"></div>
+    <p class="power" id="power"></p>
+    <p class="oppPower" id="oppPower"></p>
     
   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
   <script src="/images.js"></script>
   <script src="/gui.js"></script>
   <script>
-    screen.orientation.lock('landscape');
+    $("#endturn").hide();
     var username = null;
     var myId = null;
     var socket = io();
@@ -44,6 +47,9 @@
     $(document).on('click', '.user', function () {
       socket.emit('challenge', $(this).text());
     });
+    $("#endturn").click(function() {
+      socket.emit('endturn');
+    });
     socket.on('challenge', function(from){
       var ret = confirm("Challenged by: "+from+". Do you wish to accept?");
       if(ret) {
@@ -51,23 +57,35 @@
       }
     });
     socket.on('gameState', function(game) {
-      //socket.emit('debug', myId);
-      //socket.emit('debug', game.player1.id);
-      //socket.emit('debug', game.player2.id);
-      //var player;
-     // var opponent;
+      var player;
+      var opp;
       if(game.player1.id == myId) {
-        drawHand(game.player1.hand);
-        drawOppHand(game.player2.hand);
-        drawInPlay(game.player1.inPlay);
-        drawOppInPlay(game.player2.inPlay);
+        player = game.player1;
+        opp = game.player2;
       }
       else {
-        drawHand(game.player2.hand);
-        drawOppHand(game.player1.hand);
-        drawInPlay(game.player2.inPlay);
-        drawOppInPlay(game.player1.inPlay);
+        player = game.player2;
+        opp = game.player1;
       }
+      drawHand(player.hand);
+      drawOppHand(opp.hand);
+      drawInPlay(player.inPlay);
+      drawOppInPlay(opp.inPlay);
+      if(game.turnPlayerId == myId)
+        $("#endturn").show();
+      else
+        $("#endturn").hide();
+      $("#power").text(player.power+' / '+player.totalPower);
+      $("#oppPower").text(opp.power+' / '+opp.totalPower);
+    });
+    socket.on('notyourturn', function() {
+      alert("It's not my turn!!!");
+    });
+    socket.on('notenoughpower', function() {
+      alert("I don't have enough power!!!");
+    });
+    socket.on('toomanycreatures', function() {
+      alert("I have too many creatures!!!");
     });
   </script>
   </body>
