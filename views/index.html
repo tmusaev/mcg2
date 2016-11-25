@@ -13,6 +13,9 @@
     <div class="oppInPlay" id="oppInPlay"></div>
     <p class="power" id="power"></p>
     <p class="oppPower" id="oppPower"></p>
+    <p class="life" id="life"></p>
+    <p class="oppLife" id="oppLife"></p>
+    <p class="stats" id="stats"></p>
     
   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -27,8 +30,9 @@
       if(user == 'error')
         document.location.href = '/login';
       else {
-        username = user;
-        socket.emit('connectToServer', user);
+        username = user.fullName;
+        $("#stats").text('Wins: '+user.customData.wins+' - Losses:  '+user.customData.losses+' - Gold: '+user.customData.gold);
+        socket.emit('connectToServer', user.fullName);
       }
     });
     socket.on('myId', function(id){
@@ -77,6 +81,8 @@
         $("#endturn").hide();
       $("#power").text(player.power+' / '+player.totalPower);
       $("#oppPower").text(opp.power+' / '+opp.totalPower);
+      $("#life").text(player.life);
+      $("#oppLife").text(opp.life);
     });
     socket.on('notyourturn', function() {
       alert("It's not my turn!!!");
@@ -84,8 +90,8 @@
     socket.on('notenoughpower', function() {
       alert("I don't have enough power!!!");
     });
-    socket.on('toomanycreatures', function() {
-      alert("I have too many creatures!!!");
+    socket.on('toomanyfollowers', function() {
+      alert("I have too many followers!!!");
     });
   </script>
   </body>

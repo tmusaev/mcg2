@@ -6,9 +6,15 @@
 .user:hover {cursor:pointer; background: #eee;}
  
 body {
-  background: #98FB98;
+  background: #CDC0B0;
 }
  
+.stats {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+}
 .power {
   position: absolute;
   left: 10px;
@@ -21,6 +27,34 @@ body {
   left: 10px;
   top: 10px;
   font: 30px/60px Georgia, Times New Roman, serif;
+}
+
+.life {
+  color: red;
+  position: absolute;
+  left: 10px;
+  bottom: 60px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+}
+
+.oppLife {
+  color: red;
+  position: absolute;
+  left: 10px;
+  top: 60px;
+  font: 30px/60px Georgia, Times New Roman, serif;
+}
+
+.carduseful {
+  position: relative;
+  float: left;
+  width: 150px;
+  height: 220px;
+  border-radius: 10px;
+  background: #fff;
+  -webkit-box-shadow:0 0 20px yellow; 
+  -moz-box-shadow: 0 0 20px yellow; 
+  box-shadow:0 0 20px yellow;
 }
 
 .card, .cardback {
@@ -48,7 +82,7 @@ body {
   font: 25px/30px Georgia, Times New Roman, serif;
 }
 
-.card img, .cardback img {
+.card img, .cardback img, .carduseful img{
   position: absolute;
   width: 80%;
   /*width: 50%;*/
@@ -105,13 +139,13 @@ body {
 }*/
 
 .hand {
-  margin-left: 400px;
+  margin-left: 250px;
   position: absolute;
   bottom: -80px;
 }
 
 .oppHand {
-  margin-left: 400px;
+  margin-left: 250px;
   position: absolute;
   top: -80px;
 }
