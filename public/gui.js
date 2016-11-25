@@ -29,7 +29,11 @@ function drawOppInPlay(oppInPlay) {
 //Id used to index the card relative to it's location (hand, field, etc)
 function drawCard(card, id, location) {
   var d = document.createElement("div");
-  d.setAttribute("class", "card");
+  
+  if((card.playable == true || card.canattack == true) && location != "oppInPlay")
+    d.setAttribute("class", "carduseful");
+  else
+    d.setAttribute("class", "card");
   
   var img = document.createElement("img");
   img.src = images.get(card.name);

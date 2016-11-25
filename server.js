@@ -31,7 +31,15 @@ app.get("/", function (request, response) {
 
 app.get('/user', stormpath.getUser, function (request, response) {
   if(request.user) {
-    response.send(request.user.fullName);
+    if(request.user.customData.wins === undefined)
+      request.user.customData.wins = 0;
+    if(request.user.customData.losses === undefined)
+      request.user.customData.losses = 0;
+    if(request.user.customData.gold === undefined)
+      request.user.customData.gold = 0;
+    //response.send(request.user.fullName, request.user.customData.wins, request.user.customData.losses, request.user.customData.gold);
+    response.send(request.user);
+    //console.log(request.user);
   }
   else {
     response.send('error');
@@ -92,12 +100,14 @@ io.on('connection', function(socket){
       var c = player.hand[index];
       if(c.cost > player.power)
         io.to(socket.id).emit('notenoughpower');
-      else if(c.type == "Creature" && player.inPlay.length == 5)
-        io.to(socket.id).emit('toomanycreatures');
+      else if(c.type == "Follower" && player.inPlay.length == 5)
+        io.to(socket.id).emit('toomanyfollowers');
       else {
         var card = player.hand.splice(index, 1);
+        card[0].playable = false;
         player.inPlay.push(card[0]);
         player.power = player.power - c.cost;
+        glowPlayable(player);
         emitGameState(game);
       }
     }
@@ -110,12 +120,18 @@ io.on('connection', function(socket){
       game.player2.totalPower++;
       game.player2.power = game.player2.totalPower;
       game.turnPlayerId = game.player2.id;
+      glowPlayable(game.player2);
+      glowCanAttack(game.player2);
+      unGlowCanAttack(game.player1);
     }
     else {
       drawCard(game.player1);
       game.player1.totalPower++;
       game.player1.power = game.player1.totalPower;
       game.turnPlayerId = game.player1.id;
+      glowPlayable(game.player1);
+      glowCanAttack(game.player1);
+      unGlowCanAttack(game.player2);
     }
     emitGameState(game);
   });
@@ -147,6 +163,8 @@ var Card = function(name, cost, atk, health, type) {
   this.type = type;
   this.atk = atk;
   this.health = health;
+  this.playable = false;
+  this.canattack = false;
 };
 
 var Player = function(id, deck, hand, discard, inPlay, power) {
@@ -157,6 +175,7 @@ var Player = function(id, deck, hand, discard, inPlay, power) {
   this.inPlay = inPlay;
   this.totalPower = 0;
   this.power = power;
+  this.life = 6;
 };
 
 var Game = function(player1, player2) {
@@ -166,24 +185,36 @@ var Game = function(player1, player2) {
     this.turnPlayerId = player1.id;
     player1.totalPower++;
     player1.power++;
+    glowPlayable(player1);
   }
   else {
     this.turnPlayerId = player2.id;
     player2.totalPower++;
     player2.power++;
+    glowPlayable(player2);
   }
 };
 
-var Things = new Card("Things", 1, 1, 1, "Creature");
-var Assassin = new Card("Assassin", 2, 2, 2, "Creature");
-var Captain = new Card("Captain", 3, 3, 3, "Creature");
-var Warrior = new Card("Warrior", 4, 4, 4, "Creature");
-var Priest = new Card("Priest", 5, 5, 5, "Creature");
-var Wardog = new Card("Wardog", 6, 6, 6, "Creature");
-var Ninja = new Card("Ninja", 7, 7, 7, "Creature");
-var Medic = new Card("Medic", 8, 8, 8, "Creature");
-var Sherrif = new Card("Sherrif", 9, 9, 9, "Creature");
-var Judge = new Card("Judge", 10, 10, 10, "Creature");
+function glowPlayable(player) {
+  for(var i = 0; i < player.hand.length; i++) {
+    if(player.hand[i].cost <= player.power)
+      player.hand[i].playable = true;
+    else
+      player.hand[i].playable = false;
+  }
+}
+
+function glowCanAttack(player) {
+  for(var i = 0; i < player.inPlay.length; i++) {
+      player.inPlay[i].canattack = true;
+  }
+}
+
+function unGlowCanAttack(player) {
+  for(var i = 0; i < player.inPlay.length; i++) {
+      player.inPlay[i].canattack = false;
+  }
+}
 
 function drawCard(player) {
   if(player.deck.length > 0) {
@@ -205,25 +236,25 @@ function initHand(deck) {
 function initDeck() {
   var deck = [];
   for(i = 0; i < 3; i++)
-    deck.push(Things);
+    deck.push(new Card("Things", 1, 1, 1, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Assassin);
+    deck.push(new Card("Assassin", 2, 2, 2, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Captain);
+    deck.push(new Card("Captain", 3, 3, 3, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Warrior);
+    deck.push(new Card("Warrior", 4, 4, 4, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Priest);
+    deck.push(new Card("Priest", 5, 5, 5, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Wardog);
+    deck.push(new Card("Wardog", 6, 6, 6, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Ninja);
+    deck.push(new Card("Ninja", 7, 7, 7, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Medic);
+    deck.push(new Card("Medic", 8, 8, 8, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Sherrif);
+    deck.push(new Card("Sherrif", 9, 9, 9, "Follower"));
   for(i = 0; i < 3; i++)
-    deck.push(Judge);
+    deck.push(new Card("Judge", 10, 10, 10, "Follower"));
   shuffle(deck);
   return deck;
 }
