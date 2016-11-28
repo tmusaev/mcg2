@@ -30,10 +30,23 @@ function drawOppInPlay(oppInPlay) {
 function drawCard(card, id, location) {
   var d = document.createElement("div");
   
-  if((card.playable == true || card.canattack == true) && location != "oppInPlay")
-    d.setAttribute("class", "carduseful");
+  if(card.playable == true && location != "oppInPlay")
+    d.setAttribute("class", "cardplayable");
+  else if(card.canattack == true && location != "oppInPlay") {
+    d.setAttribute("class", "cardcanattack")
+      d.onclick=function(){
+        attacker = this.id;
+      };
+  }
   else
     d.setAttribute("class", "card");
+  
+  if(location == "oppInPlay") {
+    d.onclick=function(){
+      if(attacker != null)
+        socket.emit('battle', attacker, this.id);
+    };
+  }
   
   var img = document.createElement("img");
   img.src = images.get(card.name);
@@ -69,8 +82,9 @@ function drawCard(card, id, location) {
   name.textContent = card.name;
   d.appendChild(name);
   
+  d.id = id;
+  
   if(location == "hand") {
-    d.id = id;
     d.onclick=function(){
       socket.emit('play', this.id);
     };

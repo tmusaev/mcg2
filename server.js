@@ -136,6 +136,34 @@ io.on('connection', function(socket){
     emitGameState(game);
   });
   
+  socket.on('battle', function(attackerId, receiverId) {
+    var game = games.get(socket.id);
+    if(game.turnPlayerId != socket.id) {
+      io.to(socket.id).emit('notyourturn');
+    }
+    else {
+      var player;
+      var opp;
+      if(game.player1.id == socket.id) {
+        player = game.player1;
+        opp = game.player2;
+      }
+      else {
+        player = game.player2;
+        opp = game.player1;
+      }
+      var attacker = player.inPlay[attackerId];
+      var receiver = opp.inPlay[receiverId];
+      attacker.health -= receiver.atk;
+      receiver.health -= attacker.atk;
+      if(attacker.health <= 0)
+        player.discard.push(player.inPlay.splice(attackerId, 1)[0]);
+      if(receiver.health <= 0)
+        opp.discard.push(opp.inPlay.splice(receiverId, 1)[0]);
+      emitGameState(game);
+    }
+  });
+  
   socket.on('disconnect', function(){
     if(users.has(socket.id)) {
       users.delete(socket.id);

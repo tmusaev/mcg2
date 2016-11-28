@@ -26,7 +26,6 @@
     var username = null;
     var myId = null;
     var socket = io();
-    var attacker = null;
     $.get('/user', function(user) {
       if(user == 'error')
         document.location.href = '/login';
