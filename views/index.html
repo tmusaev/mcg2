@@ -94,11 +94,13 @@
     socket.on('winner', function() {
       $.get('/winner', function(gold) {
         alert("Congrats, you won! Reward: "+gold+" gold.");
+        location.reload();
       });
     });
     socket.on('loser', function() {
       $.get('/loser', function(gold) {
         alert("You lost! For your effort: "+gold+" gold.");
+        location.reload();
       });
     });
     socket.on('notyourturn', function() {
