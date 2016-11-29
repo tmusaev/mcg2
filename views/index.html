@@ -26,6 +26,7 @@
     var username = null;
     var myId = null;
     var socket = io();
+    var attacker = null;
     $.get('/user', function(user) {
       if(user == 'error')
         document.location.href = '/login';
@@ -53,6 +54,12 @@
     });
     $("#endturn").click(function() {
       socket.emit('endturn');
+    });
+    $("#oppLife").click(function() {
+      if(attacker != null) {
+        socket.emit('atklife', attacker);
+        attacker = null;
+      }
     });
     socket.on('challenge', function(from){
       var ret = confirm("Challenged by: "+from+". Do you wish to accept?");
@@ -83,6 +90,18 @@
       $("#oppPower").text(opp.power+' / '+opp.totalPower);
       $("#life").text(player.life);
       $("#oppLife").text(opp.life);
+    });
+    socket.on('winner', function() {
+      $.get('/winner', function(gold) {
+        alert("Congrats, you won! Reward: "+gold+" gold.");
+        location.reload();
+      });
+    });
+    socket.on('loser', function() {
+      $.get('/loser', function(gold) {
+        alert("You lost! For your effort: "+gold+" gold.");
+        location.reload();
+      });
     });
     socket.on('notyourturn', function() {
       alert("It's not my turn!!!");

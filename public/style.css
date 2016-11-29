@@ -8,6 +8,18 @@
 body {
   background: #CDC0B0;
 }
+
+.gameContainer {
+  max-width: 700px;
+  max-height: 400px;
+  float: left;
+}
+
+.gameChat {
+  max-width: 200px;
+  max-height: 200px;
+  float: right;
+}
  
 .stats {
   position: absolute;
@@ -45,7 +57,7 @@ body {
   font: 30px/60px Georgia, Times New Roman, serif;
 }
 
-.carduseful {
+.cardplayable, .cardcanattack {
   position: relative;
   float: left;
   width: 150px;
@@ -55,6 +67,10 @@ body {
   -webkit-box-shadow:0 0 20px yellow; 
   -moz-box-shadow: 0 0 20px yellow; 
   box-shadow:0 0 20px yellow;
+}
+
+.cardcanattack:hover, .oppLife:hover {
+  cursor: pointer;
 }
 
 .card, .cardback {
@@ -82,7 +98,7 @@ body {
   font: 25px/30px Georgia, Times New Roman, serif;
 }
 
-.card img, .cardback img, .carduseful img{
+.card img, .cardback img, .cardplayable img, .cardcanattack img {
   position: absolute;
   width: 80%;
   /*width: 50%;*/
@@ -175,6 +191,11 @@ body {
   z-index: 1;
   bottom: 100px;
   cursor: pointer;
+}
+
+.attacker {
+  transform.scale(1.1);
+  z-index: 1;
 }
 
 #hand > *, #oppHand > * {

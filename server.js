@@ -37,13 +37,26 @@ app.get('/user', stormpath.getUser, function (request, response) {
       request.user.customData.losses = 0;
     if(request.user.customData.gold === undefined)
       request.user.customData.gold = 0;
-    //response.send(request.user.fullName, request.user.customData.wins, request.user.customData.losses, request.user.customData.gold);
+    request.user.customData.save();
     response.send(request.user);
-    //console.log(request.user);
   }
   else {
     response.send('error');
   }
+});
+
+app.get('/winner', stormpath.getUser, function (request, response) {
+  request.user.customData.wins = parseInt(request.user.customData.wins) + 1;
+  request.user.customData.gold = parseInt(request.user.customData.gold) + 50;
+  request.user.customData.save();
+  response.send('50');
+});
+
+app.get('/loser', stormpath.getUser, function (request, response) {
+  request.user.customData.losses = parseInt(request.user.customData.losses) + 1;
+  request.user.customData.gold = parseInt(request.user.customData.gold) + 15;
+  request.user.customData.save();
+  response.send('15');
 });
 
 var users = new Map(); //maps socket.id to username
@@ -134,6 +147,64 @@ io.on('connection', function(socket){
       unGlowCanAttack(game.player2);
     }
     emitGameState(game);
+  });
+  
+  socket.on('battle', function(attackerId, receiverId) {
+    var game = games.get(socket.id);
+    if(game.turnPlayerId != socket.id) {
+      io.to(socket.id).emit('notyourturn');
+    }
+    else {
+      var player;
+      var opp;
+      if(game.player1.id == socket.id) {
+        player = game.player1;
+        opp = game.player2;
+      }
+      else {
+        player = game.player2;
+        opp = game.player1;
+      }
+      var attacker = player.inPlay[attackerId];
+      var receiver = opp.inPlay[receiverId];
+      attacker.health -= receiver.atk;
+      receiver.health -= attacker.atk;
+      attacker.canattack = false;
+      if(attacker.health <= 0)
+        player.discard.push(player.inPlay.splice(attackerId, 1)[0]);
+      if(receiver.health <= 0)
+        opp.discard.push(opp.inPlay.splice(receiverId, 1)[0]);
+      emitGameState(game);
+    }
+  });
+  
+  socket.on('atklife', function(attackerId) {
+    var game = games.get(socket.id);
+    if(game.turnPlayerId != socket.id) {
+      io.to(socket.id).emit('notyourturn');
+    }
+    else {
+      var player;
+      var opp;
+      if(game.player1.id == socket.id) {
+        player = game.player1;
+        opp = game.player2;
+      }
+      else {
+        player = game.player2;
+        opp = game.player1;
+      }
+      var attacker = player.inPlay[attackerId];
+      opp.life -= 1;
+      attacker.canattack = false;
+      if(opp.life == 0) {
+       io.to(player.id).emit('winner');
+       io.to(opp.id).emit('loser');
+      }
+      else {
+        emitGameState(game);
+      }
+    }
   });
   
   socket.on('disconnect', function(){
