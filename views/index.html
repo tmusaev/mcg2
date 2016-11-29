@@ -55,6 +55,12 @@
     $("#endturn").click(function() {
       socket.emit('endturn');
     });
+    $("#oppLife").click(function() {
+      if(attacker != null) {
+        socket.emit('atklife', attacker);
+        attacker = null;
+      }
+    });
     socket.on('challenge', function(from){
       var ret = confirm("Challenged by: "+from+". Do you wish to accept?");
       if(ret) {
@@ -84,6 +90,16 @@
       $("#oppPower").text(opp.power+' / '+opp.totalPower);
       $("#life").text(player.life);
       $("#oppLife").text(opp.life);
+    });
+    socket.on('winner', function() {
+      $.get('/winner', function(gold) {
+        alert("Congrats, you won! Reward: "+gold+" gold.");
+      });
+    });
+    socket.on('loser', function() {
+      $.get('/loser', function(gold) {
+        alert("You lost! For your effort: "+gold+" gold.");
+      });
     });
     socket.on('notyourturn', function() {
       alert("It's not my turn!!!");

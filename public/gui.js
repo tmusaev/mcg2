@@ -43,8 +43,10 @@ function drawCard(card, id, location) {
   
   if(location == "oppInPlay") {
     d.onclick=function(){
-      if(attacker != null)
+      if(attacker != null) {
         socket.emit('battle', attacker, this.id);
+        attacker = null;
+      }
     };
   }
   
