@@ -38,9 +38,7 @@ app.get('/user', stormpath.getUser, function (request, response) {
     if(request.user.customData.gold === undefined)
       request.user.customData.gold = 0;
     request.user.customData.save();
-    //response.send(request.user.fullName, request.user.customData.wins, request.user.customData.losses, request.user.customData.gold);
     response.send(request.user);
-    //console.log(request.user);
   }
   else {
     response.send('error');
@@ -248,7 +246,7 @@ var Player = function(id, deck, hand, discard, inPlay, power) {
   this.inPlay = inPlay;
   this.totalPower = 0;
   this.power = power;
-  this.life = 1;
+  this.life = 6;
 };
 
 var Game = function(player1, player2) {

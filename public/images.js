@@ -12,3 +12,5 @@ images.set("Judge", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac6
 images.set("CardBack", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2FtanBrambleTower.jpg");
 images.set("Cerebrus", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2Fcerberus.jpg");
 images.set("Justice", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2Fjustice.jpg");
+images.set("Death", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2Fdeath.jpg");
+images.set("Samurai", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2Fsamurai.jpg");
