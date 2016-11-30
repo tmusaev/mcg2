@@ -84,7 +84,8 @@ io.on('connection', function(socket){
     ids.set(user, socket.id);
     var arr = [];
     for(var key of users.keys()) {
-      arr.push(users.get(key));
+      if(!games.has(key))
+        arr.push(users.get(key));
     }
     io.emit('users', arr);
   });
@@ -105,6 +106,13 @@ io.on('connection', function(socket){
     var game = new Game(p1, p2);
     games.set(ids.get(user1), game);
     games.set(ids.get(user2), game);
+    
+    var arr = [];
+    for(var key of users.keys()) {
+      if(!games.has(key))
+        arr.push(users.get(key));
+    }
+    io.emit('users', arr);
     emitGameState(game);
   });
   
@@ -234,6 +242,8 @@ io.on('connection', function(socket){
       else {
         var c = player.inPlay[index];
         player.inPlay.splice(index, 1, evolve(evos.get(c.name)));
+        player.power = player.power - 2;
+        glowPlayable(player);
         emitGameState(game);
       }
     }

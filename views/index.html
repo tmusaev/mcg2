@@ -41,7 +41,7 @@
     });
     socket.on('users', function(users){
       $('#users').empty();
-      $('#users').append($('<header>').text(users.length+' user(s) online.'));
+      $('#users').append($('<header>').text(users.length+' user(s) in lobby.'));
       for(var i = 0; i < users.length; i++) {
         if(username == users[i])
           $('#users').append($('<li>').text('***'+users[i]));
@@ -68,6 +68,7 @@
       }
     });
     socket.on('gameState', function(game) {
+      $("#users").hide();
       var player;
       var opp;
       if(game.player1.id == myId) {
