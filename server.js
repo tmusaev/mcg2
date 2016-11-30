@@ -62,6 +62,15 @@ app.get('/loser', stormpath.getUser, function (request, response) {
 var users = new Map(); //maps socket.id to username
 var ids = new Map(); //maps usernames to socket.id
 var games = new Map(); //maps socket.id to a game
+var evos = new Map();
+evos.set("Assassin", "Death");
+evos.set("Wardog", "Cerebrus");
+evos.set("Ninja", "Samurai");
+evos.set("Judge", "Justice");
+evos.set("Warrior", "Centurion");
+evos.set("Sheriff", "The Law");
+evos.set("Captain", "Kraken");
+evos.set("Medic", "Doctor");
 
 io.on('connection', function(socket){
   io.to(socket.id).emit('myId', socket.id); //send id back so it knows itself
@@ -197,11 +206,34 @@ io.on('connection', function(socket){
       var attacker = player.inPlay[attackerId];
       opp.life -= 1;
       attacker.canattack = false;
+      drawCard(opp);
       if(opp.life == 0) {
        io.to(player.id).emit('winner');
        io.to(opp.id).emit('loser');
       }
       else {
+        emitGameState(game);
+      }
+    }
+  });
+  
+  socket.on('evolve', function(index) {
+    var game = games.get(socket.id);
+    if(game.turnPlayerId != socket.id) {
+      io.to(socket.id).emit('notyourturn');
+    }
+    else {
+      var player;
+      if(game.player1.id == socket.id)
+        player = game.player1;
+      else
+        player = game.player2;
+      if(player.power < 2) {
+        io.to(socket.id).emit('notenoughpower')
+      }
+      else {
+        var c = player.inPlay[index];
+        player.inPlay.splice(index, 1, evolve(evos.get(c.name)));
         emitGameState(game);
       }
     }
@@ -228,14 +260,15 @@ function emitGameState(game) {
   io.to(game.player2.id).emit('gameState', game);
 }
 
-var Card = function(name, cost, atk, health, type) {
+var Card = function(name, cost, atk, health, type, canattack, evolvable) {
   this.name = name;
   this.cost = cost;
   this.type = type;
   this.atk = atk;
   this.health = health;
   this.playable = false;
-  this.canattack = false;
+  this.canattack = canattack;
+  this.evolvable = evolvable;
 };
 
 var Player = function(id, deck, hand, discard, inPlay, power) {
@@ -304,28 +337,48 @@ function initHand(deck) {
   return hand;
 }
 
+function evolve(name) {
+  if(name == "Death")
+    return new Card("Death", 4, 4, 4, "Follower", true, false);
+  else if(name == "Cerebrus")
+    return new Card("Cerebrus", 4, 4, 4, "Follower", true, false);
+  else if(name == "Kraken")
+    return new Card("Kraken", 4, 4, 4, "Follower", true, false);
+  else if(name == "The Law")
+    return new Card("The Law", 4, 4, 4, "Follower", true, false);
+  else if(name == "Justice")
+    return new Card("Justice", 4, 4, 4, "Follower", true, false);
+  else if(name == "Centurion")
+    return new Card("Centurion", 4, 4, 4, "Follower", true, false);
+  else if(name == "Samurai")
+    return new Card("Samurai", 5, 6, 4, "Follower", true, false);
+  else if(name == "Doctor")
+    return new Card("Doctor", 4, 4, 4, "Follower", true, false);
+    
+}
+
 function initDeck() {
   var deck = [];
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Things", 1, 1, 1, "Follower"));
+    deck.push(new Card("Things", 1, 1, 1, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Assassin", 2, 2, 2, "Follower"));
+    deck.push(new Card("Assassin", 2, 2, 2, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Captain", 3, 3, 3, "Follower"));
+    deck.push(new Card("Captain", 5, 2, 5, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Warrior", 4, 4, 4, "Follower"));
+    deck.push(new Card("Warrior", 4, 5, 4, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Priest", 5, 5, 5, "Follower"));
+    deck.push(new Card("Priest", 2, 1, 5, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Wardog", 6, 6, 6, "Follower"));
+    deck.push(new Card("Wardog", 3, 4, 3, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Ninja", 7, 7, 7, "Follower"));
+    deck.push(new Card("Ninja", 3, 3, 1, "Follower", true, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Medic", 8, 8, 8, "Follower"));
+    deck.push(new Card("Medic", 4, 2, 8, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Sherrif", 9, 9, 9, "Follower"));
+    deck.push(new Card("Sheriff", 7, 5, 8, "Follower", false, true));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Judge", 10, 10, 10, "Follower"));
+    deck.push(new Card("Judge", 10, 10, 10, "Follower", false, true));
   shuffle(deck);
   return deck;
 }

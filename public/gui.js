@@ -30,9 +30,9 @@ function drawOppInPlay(oppInPlay) {
 function drawCard(card, id, location) {
   var d = document.createElement("div");
   
-  if(card.playable == true && location != "oppInPlay")
+  if(card.playable == true && location == "hand")
     d.setAttribute("class", "cardplayable");
-  else if(card.canattack == true && location != "oppInPlay") {
+  else if(card.canattack == true && location == "inPlay") {
     d.setAttribute("class", "cardcanattack")
       d.onclick=function(){
         attacker = this.id;
@@ -78,6 +78,16 @@ function drawCard(card, id, location) {
   health.setAttribute("class", "health");
   health.textContent = card.health;
   d.appendChild(health);
+  
+  if(location == "inPlay" && card.evolvable) {
+    var arrow = document.createElement("p");
+    arrow.setAttribute("class", "arrow");
+    arrow.textContent = "⇮";
+    arrow.onclick=function(){
+      socket.emit('evolve', id);
+    };
+    d.appendChild(arrow);
+  }
   
   var name = document.createElement("p");
   name.setAttribute("class", "name");
