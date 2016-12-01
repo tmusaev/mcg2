@@ -21,3 +21,4 @@ images.set("The Law", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6a
 images.set("Red Lotus", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2FredLotus.jpg");
 images.set("Blue Lily", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2FblueLily.jpg");
 images.set("Green Leaves", "https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2FgreenLeaves.jpg");
+images.set("Hand of God","https://cdn.hyperdev.com/35987cba-b6a9-4e21-9e71-216f6d6ac68f%2FhandOfGod.jpg");

@@ -9,6 +9,21 @@ body {
   background: #CDC0B0;
 }
 
+#tutorial {
+  background: #FFFFFF;
+  max-width: 500px;
+}
+
+#logform {
+  display: inline;
+}
+
+#gameHomeButton {
+  float: right;
+  width: 100px;
+  height: 40px;
+}
+
 .gameContainer {
   max-width: 700px;
   max-height: 400px;
@@ -42,7 +57,7 @@ body {
 }
 
 .life {
-  color: red;
+  color: black;
   position: absolute;
   left: 10px;
   bottom: 60px;
@@ -50,7 +65,7 @@ body {
 }
 
 .oppLife {
-  color: red;
+  color: black;
   position: absolute;
   left: 10px;
   top: 60px;
@@ -182,6 +197,11 @@ body {
   margin-left: 50px;
   position: absolute;
   bottom: 150px;
+}
+
+.logbutton {
+  width: 100px;
+  height: 40px;
 }
 
 .endturn {

@@ -1,119 +1,59 @@
-<!doctype html>
 <html>
   <head>
-    <title>CCG</title>
+    <title>CCG Home Page</title>
     <link rel="stylesheet" href="/style.css">
+    <script>
+      $.post('/logout', function(user) {
+      if(user != 'error')
+        document.location.href = '/logout';
+      }
+    });
+    </script>
+    <style>
+      h1 {
+        color: blue;
+        font-family: curlz mt;
+      }
+    </style>
   </head>
   <body>
-    <ul id="users"></ul>
-    <button class="endturn" id="endturn">End Turn</button>
-    <div class="hand" id="hand"></div>
-    <div class="oppHand" id="oppHand"></div>
-    <div class="inPlay" id="inPlay"></div>
-    <div class="oppInPlay" id="oppInPlay"></div>
-    <p class="power" id="power"></p>
-    <p class="oppPower" id="oppPower"></p>
-    <p class="life" id="life"></p>
-    <p class="oppLife" id="oppLife"></p>
-    <p class="stats" id="stats"></p>
-    
-  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-  <script src="/images.js"></script>
-  <script src="/gui.js"></script>
-  <script>
-    $("#endturn").hide();
-    var username = null;
-    var myId = null;
-    var socket = io();
-    var attacker = null;
-    $.get('/user', function(user) {
-      if(user == 'error')
-        document.location.href = '/login';
-      else {
-        username = user.fullName;
-        $("#stats").text('Wins: '+user.customData.wins+' - Losses:  '+user.customData.losses+' - Gold: '+user.customData.gold);
-        socket.emit('connectToServer', user.fullName);
-      }
-    });
-    socket.on('myId', function(id){
-      myId = id;
-    });
-    socket.on('users', function(users){
-      $('#users').empty();
-      $('#users').append($('<header>').text(users.length+' user(s) in lobby.'));
-      for(var i = 0; i < users.length; i++) {
-        if(username == users[i])
-          $('#users').append($('<li>').text('***'+users[i]));
-        else
-          $('#users').append($('<li class="user">').text(users[i]));
-      }
-    });
-    $(document).on('click', '.user', function () {
-      socket.emit('challenge', $(this).text());
-    });
-    $("#endturn").click(function() {
-      socket.emit('endturn');
-    });
-    $("#oppLife").click(function() {
-      if(attacker != null) {
-        socket.emit('atklife', attacker);
-        attacker = null;
-      }
-    });
-    socket.on('challenge', function(from){
-      var ret = confirm("Challenged by: "+from+". Do you wish to accept?");
-      if(ret) {
-        socket.emit('newgame', from, username);
-      }
-    });
-    socket.on('gameState', function(game) {
-      $("#users").hide();
-      var player;
-      var opp;
-      if(game.player1.id == myId) {
-        player = game.player1;
-        opp = game.player2;
-      }
-      else {
-        player = game.player2;
-        opp = game.player1;
-      }
-      drawHand(player.hand);
-      drawOppHand(opp.hand);
-      drawInPlay(player.inPlay);
-      drawOppInPlay(opp.inPlay);
-      if(game.turnPlayerId == myId)
-        $("#endturn").show();
-      else
-        $("#endturn").hide();
-      $("#power").text(player.power+' / '+player.totalPower);
-      $("#oppPower").text(opp.power+' / '+opp.totalPower);
-      $("#life").text(player.life);
-      $("#oppLife").text(opp.life);
-    });
-    socket.on('winner', function() {
-      $.get('/winner', function(gold) {
-        alert("Congrats, you won! Reward: "+gold+" gold.");
-        location.reload();
-      });
-    });
-    socket.on('loser', function() {
-      $.get('/loser', function(gold) {
-        alert("You lost! For your effort: "+gold+" gold.");
-        location.reload();
-      });
-    });
-    socket.on('notyourturn', function() {
-      alert("It's not my turn!!!");
-    });
-    socket.on('notenoughpower', function() {
-      alert("I don't have enough power!!!");
-    });
-    socket.on('toomanyfollowers', function() {
-      alert("I have too many followers!!!");
-    });
-  </script>
+    <div class="contentContainer">
+      <div>
+        <form id="logform" name="submitFormli" method="GET" action="/game">
+          <input type="hidden" name="loginRequest" value="loginValue">
+          <button class="logbutton" onclick='/game'>Login</button>
+        </form>
+        <form id="logform" name="submitFormlo" method="POST" action="/logout">
+          <input type="hidden" name="logoutRequest" value="logoutValue">
+          <button class="logbutton" onclick='/logout'>Logout</button>
+        </form>
+        <form id="logform" name="submitFormcc" method="GET" action="/CCol">
+          <input type="hidden" name="CCRequest" value="CCValue">
+          <button class="logbutton" onclick='/CCol'>Card Collection</button>
+        </form>
+      </div>
+      <div id="tutorial">
+        <br/>
+        <h1>CCG: Followers</h1>
+        <br/>
+        <h3>How to play the game:</h3>
+        <br/>
+        <article>
+          Before entering the game arena, you must create an account.  Each account
+          requires the following information: first name, last name, email address and
+          password.  Upon completion your account has now entered our player database.
+          <br><br>
+          and First you need to create and account, then you need to login. That will
+          take you to the game scren where you can start a match. To start a match
+          look at the top right corner of the screen. There will be a list of logged
+          on users. To challenge a person to a match, click on their name in the list
+          a challenge will be automatically sent to them.<br><br>
+          
+          When you start the match, one player is chosen at random to go first. When it
+          is your turn, click on one of your playable cards to place it on the field.
+          The winner is decided when one player has lost all of their health.
+        </article>
+      </div>
+    </div>
   </body>
-
 </html>

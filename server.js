@@ -17,6 +17,12 @@ app.use(express.static('public'));
 app.use(stormpath.init(app, {
   expand: {
     customData: true //so we can store wins, losses, and gold
+  },
+  web: {
+    login: {
+      enabled: true,
+      nextUri: "/game"
+    }
   }
 }));
 
@@ -27,6 +33,10 @@ var listener = http.listen(process.env.PORT, function () {
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
+});
+
+app.get("/CCol", function (request, response) {
+  response.sendFile(__dirname + '/views/card_collection.html');
 });
 
 app.get('/user', stormpath.getUser, function (request, response) {
@@ -43,6 +53,14 @@ app.get('/user', stormpath.getUser, function (request, response) {
   else {
     response.send('error');
   }
+});
+
+app.get("/game", function (request, response) {
+  response.sendFile(__dirname + '/views/game.html');
+});
+
+app.post("/logout", function (request, response) {
+  console.log('posting: logged out');
 });
 
 app.get('/winner', stormpath.getUser, function (request, response) {
@@ -71,6 +89,7 @@ evos.set("Warrior", "Centurion");
 evos.set("Sheriff", "The Law");
 evos.set("Captain", "Kraken");
 evos.set("Medic", "Doctor");
+evos.set("Priest", "Hand of God");
 
 io.on('connection', function(socket){
   io.to(socket.id).emit('myId', socket.id); //send id back so it knows itself
@@ -106,7 +125,6 @@ io.on('connection', function(socket){
     var game = new Game(p1, p2);
     games.set(ids.get(user1), game);
     games.set(ids.get(user2), game);
-    
     var arr = [];
     for(var key of users.keys()) {
       if(!games.has(key))
@@ -135,7 +153,42 @@ io.on('connection', function(socket){
       else {
         var card = player.hand.splice(index, 1);
         card[0].playable = false;
-        player.inPlay.push(card[0]);
+        if(card[0].name == "Red Lotus") {
+          redLotus(game);
+          for(var i = 0; i < player.inPlay.length; i++) {
+            var card = player.inPlay[i];
+            if(card.color == "Red") {
+              card.atk++;
+              card.health++;
+            }
+          }
+          player.discard.push(card[0]);
+        }
+        else if(card[0].name == "Blue Lily") {
+          blueLily(game);
+          for(var i = 0; i < player.inPlay.length; i++) {
+            var card = player.inPlay[i];
+            if(card.color == "Blue") {
+              card.atk++;
+              card.health++;
+            }
+          }
+          player.discard.push(card[0]);
+        }
+        else if(card[0].name == "Green Leaves") {
+          greenLeaves(game);
+          for(var i = 0; i < player.inPlay.length; i++) {
+            var card = player.inPlay[i];
+            if(card.color == "Green") {
+              card.atk++;
+              card.health++;
+            }
+          }
+          player.discard.push(card[0]);
+        }
+        else {
+          player.inPlay.push(card[0]);
+        }
         player.power = player.power - c.cost;
         glowPlayable(player);
         emitGameState(game);
@@ -270,7 +323,19 @@ function emitGameState(game) {
   io.to(game.player2.id).emit('gameState', game);
 }
 
-var Card = function(name, cost, atk, health, type, canattack, evolvable) {
+function redLotus(game) {
+  game.field = "Red";
+}
+
+function blueLily(game) {
+  game.field = "Blue";
+}
+
+function greenLeaves(game) {
+  game.field = "Green";
+}
+
+var Card = function(name, cost, atk, health, type, canattack, evolvable, color) {
   this.name = name;
   this.cost = cost;
   this.type = type;
@@ -279,6 +344,7 @@ var Card = function(name, cost, atk, health, type, canattack, evolvable) {
   this.playable = false;
   this.canattack = canattack;
   this.evolvable = evolvable;
+  this.color = color;
 };
 
 var Player = function(id, deck, hand, discard, inPlay, power) {
@@ -293,6 +359,7 @@ var Player = function(id, deck, hand, discard, inPlay, power) {
 };
 
 var Game = function(player1, player2) {
+  this.field = null;
   this.player1 = player1;
   this.player2 = player2;
   if(Math.floor((Math.random() * 2) + 1) == 1){
@@ -349,47 +416,69 @@ function initHand(deck) {
 
 function evolve(name) {
   if(name == "Death")
-    return new Card("Death", 4, 4, 4, "Follower", true, false);
+    return new Card("Death", 4, 4, 4, "Follower", true, false, "Blue");
   else if(name == "Cerebrus")
-    return new Card("Cerebrus", 4, 4, 4, "Follower", true, false);
+    return new Card("Cerebrus", 4, 4, 4, "Follower", true, false, "Red");
   else if(name == "Kraken")
-    return new Card("Kraken", 4, 4, 4, "Follower", true, false);
+    return new Card("Kraken", 4, 4, 4, "Follower", true, false, "Blue");
   else if(name == "The Law")
-    return new Card("The Law", 4, 4, 4, "Follower", true, false);
+    return new Card("The Law", 4, 4, 4, "Follower", true, false, "Green");
   else if(name == "Justice")
-    return new Card("Justice", 4, 4, 4, "Follower", true, false);
+    return new Card("Justice", 4, 4, 10, "Follower", true, false, "Green");
   else if(name == "Centurion")
-    return new Card("Centurion", 4, 4, 4, "Follower", true, false);
+    return new Card("Centurion", 4, 4, 4, "Follower", true, false, "Red");
   else if(name == "Samurai")
-    return new Card("Samurai", 5, 6, 4, "Follower", true, false);
+    return new Card("Samurai", 5, 6, 4, "Follower", true, false, "Red");
   else if(name == "Doctor")
-    return new Card("Doctor", 4, 4, 4, "Follower", true, false);
-    
+    return new Card("Doctor", 4, 4, 4, "Follower", true, false, "Green");
+  else if(name == "Hand of God")
+    return new Card("Hand of God", 8, 10, 10, "Follower", true, false, "Green");
 }
 
 function initDeck() {
   var deck = [];
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Things", 1, 1, 1, "Follower", false, true));
+    deck.push(new Card("Things", 1, 1, 1, "Follower", false, false, "Black"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Assassin", 2, 2, 2, "Follower", false, true));
+    deck.push(new Card("Assassin", 2, 2, 2, "Follower", false, true, "Blue"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Captain", 5, 2, 5, "Follower", false, true));
+    deck.push(new Card("Captain", 5, 2, 5, "Follower", false, true, "Blue"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Warrior", 4, 5, 4, "Follower", false, true));
+    deck.push(new Card("Warrior", 4, 5, 4, "Follower", false, true, "Red"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Priest", 2, 1, 5, "Follower", false, true));
+    deck.push(new Card("Priest", 2, 1, 5, "Follower", false, true, "Green"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Wardog", 3, 4, 3, "Follower", false, true));
+    deck.push(new Card("Wardog", 3, 4, 3, "Follower", false, true, "Red"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Ninja", 3, 3, 1, "Follower", true, true));
+    deck.push(new Card("Ninja", 3, 3, 1, "Follower", true, true, "Red"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Medic", 4, 2, 8, "Follower", false, true));
+    deck.push(new Card("Medic", 4, 2, 8, "Follower", false, true, "Green"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Sheriff", 7, 5, 8, "Follower", false, true));
+    deck.push(new Card("Sheriff", 6, 5, 6, "Follower", false, true, "Green"));
   for(i = 0; i < 3; i++)
-    deck.push(new Card("Judge", 10, 10, 10, "Follower", false, true));
+    deck.push(new Card("Judge", 8, 7, 6, "Follower", false, true, "Green"));
+  deck.push(new Card("Red Lotus", 1, 0, 0, "Field", false, false, "Red"));
+  deck.push(new Card("Blue Lily", 1, 0, 0, "Field", false, false, "Blue"));
+  deck.push(new Card("Green Leaves", 1, 0, 0, "Field", false, false, "Green"));
   shuffle(deck);
+  return deck;
+}
+
+function allCards() {
+  var deck = [];
+  deck.push(new Card("Things", 1, 1, 1, "Follower", false, true));
+  deck.push(new Card("Assassin", 2, 2, 2, "Follower", false, true));
+  deck.push(new Card("Captain", 5, 2, 5, "Follower", false, true));
+  deck.push(new Card("Warrior", 4, 5, 4, "Follower", false, true));
+  deck.push(new Card("Priest", 2, 1, 5, "Follower", false, true));
+  deck.push(new Card("Wardog", 3, 4, 3, "Follower", false, true));
+  deck.push(new Card("Ninja", 3, 3, 1, "Follower", true, true));
+  deck.push(new Card("Medic", 4, 2, 8, "Follower", false, true));
+  deck.push(new Card("Sheriff", 6, 5, 6, "Follower", false, true));
+  deck.push(new Card("Judge", 8, 7, 6, "Follower", false, true));
+  deck.push(new Card("Red Lotus", 1, 0, 0, "Field", false, false));
+  deck.push(new Card("Blue Lily", 1, 0, 0, "Field", false, false));
+  deck.push(new Card("Green Leaves", 1, 0, 0, "Field", false, false));
   return deck;
 }
 
